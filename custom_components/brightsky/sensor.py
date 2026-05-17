@@ -277,7 +277,6 @@ class BrightSkyForecastSensor(BrightSkyEntity, SensorEntity):
         self.entity_description = SensorEntityDescription(
             key=f"{forecast_type}_{index}_{field}",
             name=forecast_sensor_name(forecast_type, index, field),
-            translation_key=f"{forecast_type}_{field}",
             native_unit_of_measurement=unit,
             device_class=device_class,
             state_class=SensorStateClass.MEASUREMENT if unit else None,
