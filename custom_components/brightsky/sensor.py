@@ -53,9 +53,36 @@ def _primary_source(key: str) -> Callable[[BrightSkyCoordinator], Any]:
     ).get(key)
 
 
+FORECAST_FIELD_NAMES = {
+    "precipitation": "precipitation",
+    "precipitation_probability": "precipitation probability",
+    "precipitation_probability_6h": "6h precipitation probability",
+    "solar": "solar",
+    "sunshine": "sunshine",
+    "visibility": "visibility",
+    "source_id": "source ID",
+}
+
+
+def forecast_sensor_name(forecast_type: str, index: int, field: str) -> str:
+    field_name = FORECAST_FIELD_NAMES[field]
+    if forecast_type == "hourly":
+        if index == 0:
+            return f"Current hour {field_name}"
+        if index == 1:
+            return f"Next hour {field_name}"
+        return f"Hourly +{index}h {field_name}"
+    if index == 0:
+        return f"Today {field_name}"
+    if index == 1:
+        return f"Tomorrow {field_name}"
+    return f"Day +{index} {field_name}"
+
+
 CURRENT_SENSOR_DESCRIPTIONS: dict[str, BrightSkySensorDescription] = {
     "precipitation_10": BrightSkySensorDescription(
         key="precipitation_10",
+        name="Precipitation 10 min",
         translation_key="precipitation_10",
         device_class=SensorDeviceClass.PRECIPITATION,
         native_unit_of_measurement=UnitOfPrecipitationDepth.MILLIMETERS,
@@ -64,6 +91,7 @@ CURRENT_SENSOR_DESCRIPTIONS: dict[str, BrightSkySensorDescription] = {
     ),
     "precipitation_30": BrightSkySensorDescription(
         key="precipitation_30",
+        name="Precipitation 30 min",
         translation_key="precipitation_30",
         device_class=SensorDeviceClass.PRECIPITATION,
         native_unit_of_measurement=UnitOfPrecipitationDepth.MILLIMETERS,
@@ -72,6 +100,7 @@ CURRENT_SENSOR_DESCRIPTIONS: dict[str, BrightSkySensorDescription] = {
     ),
     "precipitation_60": BrightSkySensorDescription(
         key="precipitation_60",
+        name="Precipitation 60 min",
         translation_key="precipitation_60",
         device_class=SensorDeviceClass.PRECIPITATION,
         native_unit_of_measurement=UnitOfPrecipitationDepth.MILLIMETERS,
@@ -80,6 +109,7 @@ CURRENT_SENSOR_DESCRIPTIONS: dict[str, BrightSkySensorDescription] = {
     ),
     "solar_10": BrightSkySensorDescription(
         key="solar_10",
+        name="Solar 10 min",
         translation_key="solar_10",
         native_unit_of_measurement=SOLAR_UNIT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -87,6 +117,7 @@ CURRENT_SENSOR_DESCRIPTIONS: dict[str, BrightSkySensorDescription] = {
     ),
     "solar_30": BrightSkySensorDescription(
         key="solar_30",
+        name="Solar 30 min",
         translation_key="solar_30",
         native_unit_of_measurement=SOLAR_UNIT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -94,6 +125,7 @@ CURRENT_SENSOR_DESCRIPTIONS: dict[str, BrightSkySensorDescription] = {
     ),
     "solar_60": BrightSkySensorDescription(
         key="solar_60",
+        name="Solar 60 min",
         translation_key="solar_60",
         native_unit_of_measurement=SOLAR_UNIT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -101,6 +133,7 @@ CURRENT_SENSOR_DESCRIPTIONS: dict[str, BrightSkySensorDescription] = {
     ),
     "sunshine_30": BrightSkySensorDescription(
         key="sunshine_30",
+        name="Sunshine 30 min",
         translation_key="sunshine_30",
         native_unit_of_measurement=UnitOfTime.MINUTES,
         state_class=SensorStateClass.MEASUREMENT,
@@ -108,6 +141,7 @@ CURRENT_SENSOR_DESCRIPTIONS: dict[str, BrightSkySensorDescription] = {
     ),
     "sunshine_60": BrightSkySensorDescription(
         key="sunshine_60",
+        name="Sunshine 60 min",
         translation_key="sunshine_60",
         native_unit_of_measurement=UnitOfTime.MINUTES,
         state_class=SensorStateClass.MEASUREMENT,
@@ -115,6 +149,7 @@ CURRENT_SENSOR_DESCRIPTIONS: dict[str, BrightSkySensorDescription] = {
     ),
     "wind_speed_60": BrightSkySensorDescription(
         key="wind_speed_60",
+        name="Wind speed 60 min",
         translation_key="wind_speed_60",
         device_class=SensorDeviceClass.WIND_SPEED,
         native_unit_of_measurement=UnitOfSpeed.KILOMETERS_PER_HOUR,
@@ -123,6 +158,7 @@ CURRENT_SENSOR_DESCRIPTIONS: dict[str, BrightSkySensorDescription] = {
     ),
     "wind_direction_60": BrightSkySensorDescription(
         key="wind_direction_60",
+        name="Wind direction 60 min",
         translation_key="wind_direction_60",
         native_unit_of_measurement=DEGREE,
         state_class=SensorStateClass.MEASUREMENT,
@@ -130,6 +166,7 @@ CURRENT_SENSOR_DESCRIPTIONS: dict[str, BrightSkySensorDescription] = {
     ),
     "wind_gust_speed_60": BrightSkySensorDescription(
         key="wind_gust_speed_60",
+        name="Wind gust speed 60 min",
         translation_key="wind_gust_speed_60",
         device_class=SensorDeviceClass.WIND_SPEED,
         native_unit_of_measurement=UnitOfSpeed.KILOMETERS_PER_HOUR,
@@ -138,6 +175,7 @@ CURRENT_SENSOR_DESCRIPTIONS: dict[str, BrightSkySensorDescription] = {
     ),
     "station_name": BrightSkySensorDescription(
         key="station_name",
+        name="Station name",
         translation_key="station_name",
         value_fn=_primary_source("station_name"),
     ),
@@ -238,6 +276,7 @@ class BrightSkyForecastSensor(BrightSkyEntity, SensorEntity):
         self.field = field
         self.entity_description = SensorEntityDescription(
             key=f"{forecast_type}_{index}_{field}",
+            name=forecast_sensor_name(forecast_type, index, field),
             translation_key=f"{forecast_type}_{field}",
             native_unit_of_measurement=unit,
             device_class=device_class,
