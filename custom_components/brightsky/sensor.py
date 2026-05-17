@@ -35,6 +35,17 @@ from .coordinator import BrightSkyCoordinator
 from .entity import BrightSkyEntity
 
 SOLAR_UNIT = "kWh/m²"
+SOLAR_IRRADIANCE_UNIT = "W/m²"
+
+
+def solar_irradiance_from_energy(value: Any, minutes: int) -> float | None:
+    """Convert interval solar irradiation in kWh/m² to average W/m²."""
+    if value is None or minutes <= 0:
+        return None
+    try:
+        return float(value) * 1000.0 * 60.0 / float(minutes)
+    except (TypeError, ValueError):
+        return None
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -58,6 +69,7 @@ FORECAST_FIELD_NAMES = {
     "precipitation_probability": "precipitation probability",
     "precipitation_probability_6h": "6h precipitation probability",
     "solar": "solar",
+    "solar_irradiance": "solar irradiance",
     "sunshine": "sunshine",
     "visibility": "visibility",
     "source_id": "source ID",
@@ -131,6 +143,36 @@ CURRENT_SENSOR_DESCRIPTIONS: dict[str, BrightSkySensorDescription] = {
         state_class=SensorStateClass.MEASUREMENT,
         value_fn=_current("solar_60"),
     ),
+    "solar_irradiance_10": BrightSkySensorDescription(
+        key="solar_irradiance_10",
+        name="Solar irradiance 10 min",
+        translation_key="solar_irradiance_10",
+        native_unit_of_measurement=SOLAR_IRRADIANCE_UNIT,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda coordinator: solar_irradiance_from_energy(
+            coordinator.data.current.get("solar_10"), 10
+        ),
+    ),
+    "solar_irradiance_30": BrightSkySensorDescription(
+        key="solar_irradiance_30",
+        name="Solar irradiance 30 min",
+        translation_key="solar_irradiance_30",
+        native_unit_of_measurement=SOLAR_IRRADIANCE_UNIT,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda coordinator: solar_irradiance_from_energy(
+            coordinator.data.current.get("solar_30"), 30
+        ),
+    ),
+    "solar_irradiance_60": BrightSkySensorDescription(
+        key="solar_irradiance_60",
+        name="Solar irradiance 60 min",
+        translation_key="solar_irradiance_60",
+        native_unit_of_measurement=SOLAR_IRRADIANCE_UNIT,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=lambda coordinator: solar_irradiance_from_energy(
+            coordinator.data.current.get("solar_60"), 60
+        ),
+    ),
     "sunshine_30": BrightSkySensorDescription(
         key="sunshine_30",
         name="Sunshine 30 min",
@@ -189,6 +231,7 @@ FORECAST_SENSOR_FIELDS: dict[str, tuple[str | None, SensorDeviceClass | None]] =
     "precipitation_probability": (PERCENTAGE, None),
     "precipitation_probability_6h": (PERCENTAGE, None),
     "solar": (SOLAR_UNIT, None),
+    "solar_irradiance": (SOLAR_IRRADIANCE_UNIT, None),
     "sunshine": (UnitOfTime.MINUTES, None),
     "visibility": (UnitOfLength.METERS, SensorDeviceClass.DISTANCE),
     "source_id": (None, None),
@@ -233,7 +276,7 @@ async def async_setup_entry(
         entities.extend(
             BrightSkyForecastSensor(coordinator, "daily", int(index), key)
             for key in FORECAST_SENSOR_FIELDS
-            if key != "source_id"
+            if key not in {"source_id", "solar_irradiance"}
         )
     async_add_entities(entities)
 
@@ -288,6 +331,8 @@ class BrightSkyForecastSensor(BrightSkyEntity, SensorEntity):
         record = self._record()
         if record is None:
             return None
+        if self.field == "solar_irradiance":
+            return solar_irradiance_from_energy(record.get("solar"), 60)
         return record.get(self.field)
 
     @property
@@ -295,13 +340,16 @@ class BrightSkyForecastSensor(BrightSkyEntity, SensorEntity):
         record = self._record()
         if record is None:
             return None
-        return {
+        attributes = {
             "forecast_type": self.forecast_type,
             "forecast_index": self.index,
             "datetime": record.get("timestamp") or record.get("datetime"),
             "condition": record.get("condition"),
             "fallback_source_ids": record.get("fallback_source_ids", {}),
         }
+        if self.field == "solar_irradiance":
+            attributes["solar_kwh_m2"] = record.get("solar")
+        return attributes
 
     def _record(self) -> dict[str, Any] | None:
         records = (

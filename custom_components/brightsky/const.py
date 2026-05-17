@@ -26,6 +26,7 @@ DEFAULT_MONITORED_CONDITIONS = [
     "precipitation_probability",
     "precipitation_probability_6h",
     "solar_60",
+    "solar_irradiance_60",
     "sunshine_60",
     "station_name",
 ]

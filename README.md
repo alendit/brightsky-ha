@@ -25,10 +25,12 @@ integration options.
 - Standard Home Assistant weather entity for current conditions.
 - Hourly forecasts from Bright Sky `/weather` records.
 - Daily forecasts derived from hourly records for Home Assistant weather cards.
-- Current extra sensors for precipitation windows, solar irradiation, sunshine
-  duration, wind details, and source station metadata.
+- Current extra sensors for precipitation windows, solar irradiation, derived
+  solar irradiance, sunshine duration, wind details, and source station
+  metadata.
 - Configurable forecast-index sensors for precipitation, precipitation
-  probability, solar, sunshine, visibility, and source data.
+  probability, solar, derived hourly solar irradiance, sunshine, visibility,
+  and source data.
 - UI config flow and options flow.
 - No API key and no external Python Bright Sky wrapper.
 
@@ -53,9 +55,14 @@ well, including:
 
 - `precipitation_10`, `precipitation_30`, `precipitation_60`
 - `solar_10`, `solar_30`, `solar_60`
+- `solar_irradiance_10`, `solar_irradiance_30`, `solar_irradiance_60`
 - `sunshine_30`, `sunshine_60`
 - `wind_speed_60`, `wind_direction_60`, `wind_gust_speed_60`
 - station name and forecast source fields
+
+Bright Sky's raw solar fields are interval irradiation in `kWh/m²`. The
+derived `solar_irradiance_*` sensors convert those values to average `W/m²`
+for consumers that expect irradiance, such as learning thermostat models.
 
 ### Forecast Sensors
 
