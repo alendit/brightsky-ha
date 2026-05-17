@@ -7,6 +7,7 @@ from custom_components.brightsky.sensor import (
     FORECAST_SENSOR_FIELDS,
     SOLAR_IRRADIANCE_UNIT,
     SOLAR_UNIT,
+    expand_monitored_conditions,
     forecast_sensor_name,
     solar_irradiance_from_energy,
 )
@@ -74,6 +75,17 @@ def test_solar_irradiance_sensor_metadata_is_model_ready() -> None:
     assert derived.native_unit_of_measurement == SOLAR_IRRADIANCE_UNIT
     assert derived.state_class is SensorStateClass.MEASUREMENT
     assert "solar_irradiance_60" in DEFAULT_MONITORED_CONDITIONS
+
+
+def test_existing_solar_monitoring_expands_to_matching_irradiance_sensor() -> None:
+    assert expand_monitored_conditions(["solar_60"]) == [
+        "solar_60",
+        "solar_irradiance_60",
+    ]
+    assert expand_monitored_conditions(["solar_60", "solar_irradiance_60"]) == [
+        "solar_60",
+        "solar_irradiance_60",
+    ]
 
 
 def test_hourly_solar_irradiance_forecast_field_is_available() -> None:

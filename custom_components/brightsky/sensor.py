@@ -91,6 +91,19 @@ def forecast_sensor_name(forecast_type: str, index: int, field: str) -> str:
     return f"Day +{index} {field_name}"
 
 
+def expand_monitored_conditions(monitored: list[str]) -> list[str]:
+    """Add derived sensors that should exist with their raw source sensors."""
+    expanded = list(monitored)
+    for raw_key, derived_key in (
+        ("solar_10", "solar_irradiance_10"),
+        ("solar_30", "solar_irradiance_30"),
+        ("solar_60", "solar_irradiance_60"),
+    ):
+        if raw_key in expanded and derived_key not in expanded:
+            expanded.append(derived_key)
+    return expanded
+
+
 CURRENT_SENSOR_DESCRIPTIONS: dict[str, BrightSkySensorDescription] = {
     "precipitation_10": BrightSkySensorDescription(
         key="precipitation_10",
@@ -253,6 +266,7 @@ async def async_setup_entry(
         CONF_MONITORED_CONDITIONS,
         entry.data.get(CONF_MONITORED_CONDITIONS, DEFAULT_MONITORED_CONDITIONS),
     )
+    monitored = expand_monitored_conditions(list(monitored))
     hourly_indices = entry.options.get(
         CONF_HOURLY_SENSOR_INDICES,
         entry.data.get(CONF_HOURLY_SENSOR_INDICES, DEFAULT_HOURLY_SENSOR_INDICES),
