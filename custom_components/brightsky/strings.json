@@ -1,0 +1,78 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Bright Sky",
+        "description": "Set up Bright Sky weather data for a location.",
+        "data": {
+          "name": "Name",
+          "latitude": "Latitude",
+          "longitude": "Longitude",
+          "timezone": "Timezone",
+          "update_interval": "Update interval in seconds",
+          "max_distance": "Maximum station distance in meters",
+          "forecast_days": "Forecast days",
+          "create_weather": "Create weather entity",
+          "create_sensors": "Create sensor entities"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not connect to Bright Sky.",
+      "unknown": "Unexpected error."
+    },
+    "abort": {
+      "already_configured": "This Bright Sky location is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Bright Sky options",
+        "data": {
+          "name": "Name",
+          "latitude": "Latitude",
+          "longitude": "Longitude",
+          "timezone": "Timezone",
+          "update_interval": "Update interval in seconds",
+          "max_distance": "Maximum station distance in meters",
+          "forecast_days": "Forecast days",
+          "create_weather": "Create weather entity",
+          "create_sensors": "Create sensor entities",
+          "monitored_conditions": "Current sensors",
+          "hourly_sensor_indices": "Hourly forecast indices",
+          "daily_sensor_indices": "Daily forecast indices"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "precipitation_10": { "name": "Precipitation 10 min" },
+      "precipitation_30": { "name": "Precipitation 30 min" },
+      "precipitation_60": { "name": "Precipitation 60 min" },
+      "solar_10": { "name": "Solar 10 min" },
+      "solar_30": { "name": "Solar 30 min" },
+      "solar_60": { "name": "Solar 60 min" },
+      "sunshine_30": { "name": "Sunshine 30 min" },
+      "sunshine_60": { "name": "Sunshine 60 min" },
+      "wind_speed_60": { "name": "Wind speed 60 min" },
+      "wind_direction_60": { "name": "Wind direction 60 min" },
+      "wind_gust_speed_60": { "name": "Wind gust speed 60 min" },
+      "station_name": { "name": "Station name" },
+      "hourly_precipitation": { "name": "Hourly precipitation" },
+      "hourly_precipitation_probability": { "name": "Hourly precipitation probability" },
+      "hourly_precipitation_probability_6h": { "name": "Hourly precipitation probability 6h" },
+      "hourly_solar": { "name": "Hourly solar" },
+      "hourly_sunshine": { "name": "Hourly sunshine" },
+      "hourly_visibility": { "name": "Hourly visibility" },
+      "hourly_source_id": { "name": "Hourly source ID" },
+      "daily_precipitation": { "name": "Daily precipitation" },
+      "daily_precipitation_probability": { "name": "Daily precipitation probability" },
+      "daily_precipitation_probability_6h": { "name": "Daily precipitation probability 6h" },
+      "daily_solar": { "name": "Daily solar" },
+      "daily_sunshine": { "name": "Daily sunshine" },
+      "daily_visibility": { "name": "Daily visibility" }
+    }
+  }
+}

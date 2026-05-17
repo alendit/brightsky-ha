@@ -1,0 +1,33 @@
+[project]
+name = "brightsky-ha"
+version = "0.1.0"
+description = "Home Assistant custom integration for the Bright Sky weather API"
+requires-python = ">=3.13.2,<3.14"
+dependencies = [
+  "homeassistant>=2026.2.0,<2026.3.0",
+]
+
+[dependency-groups]
+dev = [
+  "mypy>=1.15.0",
+  "pytest>=8.3.5",
+  "pytest-asyncio>=0.26.0",
+  "ruff>=0.11.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py313"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+files = ["custom_components/brightsky", "tests"]

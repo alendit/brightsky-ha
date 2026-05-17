@@ -1,0 +1,7 @@
+{
+  "name": "Bright Sky",
+  "content_in_root": false,
+  "render_readme": true,
+  "domains": ["weather", "sensor"],
+  "homeassistant": "2026.2.0"
+}

@@ -1,0 +1,49 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Bright Sky",
+        "description": "Set up Bright Sky weather data for a location.",
+        "data": {
+          "name": "Name",
+          "latitude": "Latitude",
+          "longitude": "Longitude",
+          "timezone": "Timezone",
+          "update_interval": "Update interval in seconds",
+          "max_distance": "Maximum station distance in meters",
+          "forecast_days": "Forecast days",
+          "create_weather": "Create weather entity",
+          "create_sensors": "Create sensor entities"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not connect to Bright Sky.",
+      "unknown": "Unexpected error."
+    },
+    "abort": {
+      "already_configured": "This Bright Sky location is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Bright Sky options",
+        "data": {
+          "name": "Name",
+          "latitude": "Latitude",
+          "longitude": "Longitude",
+          "timezone": "Timezone",
+          "update_interval": "Update interval in seconds",
+          "max_distance": "Maximum station distance in meters",
+          "forecast_days": "Forecast days",
+          "create_weather": "Create weather entity",
+          "create_sensors": "Create sensor entities",
+          "monitored_conditions": "Current sensors",
+          "hourly_sensor_indices": "Hourly forecast indices",
+          "daily_sensor_indices": "Daily forecast indices"
+        }
+      }
+    }
+  }
+}
