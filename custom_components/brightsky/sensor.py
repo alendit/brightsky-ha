@@ -14,6 +14,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     DEGREE,
     PERCENTAGE,
+    EntityCategory,
     UnitOfLength,
     UnitOfPrecipitationDepth,
     UnitOfSpeed,
@@ -64,15 +65,31 @@ def _primary_source(key: str) -> Callable[[BrightSkyCoordinator], Any]:
     ).get(key)
 
 
+def _current_solar_irradiance_60(coordinator: BrightSkyCoordinator) -> float | None:
+    value = solar_irradiance_from_energy(
+        coordinator.data.current.get("solar_60"), 60
+    )
+    if value is not None:
+        return value
+
+    current_hour = (
+        coordinator.data.hourly_records[0]
+        if coordinator.data.hourly_records
+        and isinstance(coordinator.data.hourly_records[0], dict)
+        else {}
+    )
+    return solar_irradiance_from_energy(current_hour.get("solar"), 60)
+
+
 FORECAST_FIELD_NAMES = {
-    "precipitation": "precipitation",
-    "precipitation_probability": "precipitation probability",
-    "precipitation_probability_6h": "6h precipitation probability",
-    "solar": "solar",
-    "solar_irradiance": "solar irradiance",
-    "sunshine": "sunshine",
-    "visibility": "visibility",
-    "source_id": "source ID",
+    "precipitation": "Precipitation",
+    "precipitation_probability": "Precipitation probability",
+    "precipitation_probability_6h": "Precipitation probability 6h",
+    "solar": "Solar irradiation",
+    "solar_irradiance": "Solar irradiance",
+    "sunshine": "Sunshine",
+    "visibility": "Visibility",
+    "source_id": "Source ID",
 }
 
 
@@ -80,15 +97,25 @@ def forecast_sensor_name(forecast_type: str, index: int, field: str) -> str:
     field_name = FORECAST_FIELD_NAMES[field]
     if forecast_type == "hourly":
         if index == 0:
-            return f"Current hour {field_name}"
-        if index == 1:
-            return f"Next hour {field_name}"
-        return f"Hourly +{index}h {field_name}"
-    if index == 0:
-        return f"Today {field_name}"
-    if index == 1:
-        return f"Tomorrow {field_name}"
-    return f"Day +{index} {field_name}"
+            horizon = "current hour"
+        elif index == 1:
+            horizon = "next hour"
+        else:
+            horizon = f"+{index}h"
+    elif index == 0:
+        horizon = "today"
+    elif index == 1:
+        horizon = "tomorrow"
+    else:
+        horizon = f"day +{index}"
+    return f"{field_name} ({horizon})"
+
+
+@dataclass(frozen=True, kw_only=True)
+class BrightSkyForecastSensorField:
+    unit: str | None
+    device_class: SensorDeviceClass | None = None
+    entity_category: EntityCategory | None = None
 
 
 def expand_monitored_conditions(monitored: list[str]) -> list[str]:
@@ -134,7 +161,7 @@ CURRENT_SENSOR_DESCRIPTIONS: dict[str, BrightSkySensorDescription] = {
     ),
     "solar_10": BrightSkySensorDescription(
         key="solar_10",
-        name="Solar 10 min",
+        name="Solar irradiation 10 min",
         translation_key="solar_10",
         native_unit_of_measurement=SOLAR_UNIT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -142,7 +169,7 @@ CURRENT_SENSOR_DESCRIPTIONS: dict[str, BrightSkySensorDescription] = {
     ),
     "solar_30": BrightSkySensorDescription(
         key="solar_30",
-        name="Solar 30 min",
+        name="Solar irradiation 30 min",
         translation_key="solar_30",
         native_unit_of_measurement=SOLAR_UNIT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -150,7 +177,7 @@ CURRENT_SENSOR_DESCRIPTIONS: dict[str, BrightSkySensorDescription] = {
     ),
     "solar_60": BrightSkySensorDescription(
         key="solar_60",
-        name="Solar 60 min",
+        name="Solar irradiation 60 min",
         translation_key="solar_60",
         native_unit_of_measurement=SOLAR_UNIT,
         state_class=SensorStateClass.MEASUREMENT,
@@ -182,9 +209,7 @@ CURRENT_SENSOR_DESCRIPTIONS: dict[str, BrightSkySensorDescription] = {
         translation_key="solar_irradiance_60",
         native_unit_of_measurement=SOLAR_IRRADIANCE_UNIT,
         state_class=SensorStateClass.MEASUREMENT,
-        value_fn=lambda coordinator: solar_irradiance_from_energy(
-            coordinator.data.current.get("solar_60"), 60
-        ),
+        value_fn=_current_solar_irradiance_60,
     ),
     "sunshine_30": BrightSkySensorDescription(
         key="sunshine_30",
@@ -232,22 +257,29 @@ CURRENT_SENSOR_DESCRIPTIONS: dict[str, BrightSkySensorDescription] = {
         key="station_name",
         name="Station name",
         translation_key="station_name",
+        entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=_primary_source("station_name"),
     ),
 }
 
-FORECAST_SENSOR_FIELDS: dict[str, tuple[str | None, SensorDeviceClass | None]] = {
-    "precipitation": (
-        UnitOfPrecipitationDepth.MILLIMETERS,
-        SensorDeviceClass.PRECIPITATION,
+FORECAST_SENSOR_FIELDS: dict[str, BrightSkyForecastSensorField] = {
+    "precipitation": BrightSkyForecastSensorField(
+        unit=UnitOfPrecipitationDepth.MILLIMETERS,
+        device_class=SensorDeviceClass.PRECIPITATION,
     ),
-    "precipitation_probability": (PERCENTAGE, None),
-    "precipitation_probability_6h": (PERCENTAGE, None),
-    "solar": (SOLAR_UNIT, None),
-    "solar_irradiance": (SOLAR_IRRADIANCE_UNIT, None),
-    "sunshine": (UnitOfTime.MINUTES, None),
-    "visibility": (UnitOfLength.METERS, SensorDeviceClass.DISTANCE),
-    "source_id": (None, None),
+    "precipitation_probability": BrightSkyForecastSensorField(unit=PERCENTAGE),
+    "precipitation_probability_6h": BrightSkyForecastSensorField(unit=PERCENTAGE),
+    "solar": BrightSkyForecastSensorField(unit=SOLAR_UNIT),
+    "solar_irradiance": BrightSkyForecastSensorField(unit=SOLAR_IRRADIANCE_UNIT),
+    "sunshine": BrightSkyForecastSensorField(unit=UnitOfTime.MINUTES),
+    "visibility": BrightSkyForecastSensorField(
+        unit=UnitOfLength.METERS,
+        device_class=SensorDeviceClass.DISTANCE,
+    ),
+    "source_id": BrightSkyForecastSensorField(
+        unit=None,
+        entity_category=EntityCategory.DIAGNOSTIC,
+    ),
 }
 
 
@@ -327,16 +359,19 @@ class BrightSkyForecastSensor(BrightSkyEntity, SensorEntity):
         field: str,
     ) -> None:
         super().__init__(coordinator)
-        unit, device_class = FORECAST_SENSOR_FIELDS[field]
+        field_description = FORECAST_SENSOR_FIELDS[field]
         self.forecast_type = forecast_type
         self.index = index
         self.field = field
         self.entity_description = SensorEntityDescription(
             key=f"{forecast_type}_{index}_{field}",
             name=forecast_sensor_name(forecast_type, index, field),
-            native_unit_of_measurement=unit,
-            device_class=device_class,
-            state_class=SensorStateClass.MEASUREMENT if unit else None,
+            native_unit_of_measurement=field_description.unit,
+            device_class=field_description.device_class,
+            entity_category=field_description.entity_category,
+            state_class=(
+                SensorStateClass.MEASUREMENT if field_description.unit else None
+            ),
         )
         self._attr_unique_id = f"{self._entry.entry_id}_{forecast_type}_{index}_{field}"
 
