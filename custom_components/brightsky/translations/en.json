@@ -48,6 +48,7 @@
   },
   "entity": {
     "sensor": {
+      "outdoor_temperature": { "name": "Outdoor temperature" },
       "precipitation_10": { "name": "Precipitation 10 min" },
       "precipitation_30": { "name": "Precipitation 30 min" },
       "precipitation_60": { "name": "Precipitation 60 min" },

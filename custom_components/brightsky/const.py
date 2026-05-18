@@ -22,6 +22,7 @@ CONF_UPDATE_INTERVAL = "update_interval"
 PLATFORMS = ["weather", "sensor"]
 
 DEFAULT_MONITORED_CONDITIONS = [
+    "outdoor_temperature",
     "precipitation_60",
     "precipitation_probability",
     "precipitation_probability_6h",

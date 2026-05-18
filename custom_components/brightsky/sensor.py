@@ -18,6 +18,7 @@ from homeassistant.const import (
     UnitOfLength,
     UnitOfPrecipitationDepth,
     UnitOfSpeed,
+    UnitOfTemperature,
     UnitOfTime,
 )
 from homeassistant.core import HomeAssistant
@@ -132,6 +133,15 @@ def expand_monitored_conditions(monitored: list[str]) -> list[str]:
 
 
 CURRENT_SENSOR_DESCRIPTIONS: dict[str, BrightSkySensorDescription] = {
+    "outdoor_temperature": BrightSkySensorDescription(
+        key="outdoor_temperature",
+        name="Outdoor temperature",
+        translation_key="outdoor_temperature",
+        device_class=SensorDeviceClass.TEMPERATURE,
+        native_unit_of_measurement=UnitOfTemperature.CELSIUS,
+        state_class=SensorStateClass.MEASUREMENT,
+        value_fn=_current("temperature"),
+    ),
     "precipitation_10": BrightSkySensorDescription(
         key="precipitation_10",
         name="Precipitation 10 min",

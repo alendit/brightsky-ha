@@ -2,7 +2,11 @@ from types import SimpleNamespace
 from typing import Any
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
-from homeassistant.const import EntityCategory, UnitOfPrecipitationDepth
+from homeassistant.const import (
+    EntityCategory,
+    UnitOfPrecipitationDepth,
+    UnitOfTemperature,
+)
 
 from custom_components.brightsky.const import DEFAULT_MONITORED_CONDITIONS
 from custom_components.brightsky.models import BrightSkyData
@@ -99,6 +103,25 @@ def test_solar_irradiance_sensor_metadata_is_model_ready() -> None:
     assert derived.native_unit_of_measurement == SOLAR_IRRADIANCE_UNIT
     assert derived.state_class is SensorStateClass.MEASUREMENT
     assert "solar_irradiance_60" in DEFAULT_MONITORED_CONDITIONS
+
+
+def test_outdoor_temperature_sensor_uses_current_weather_temperature() -> None:
+    description = CURRENT_SENSOR_DESCRIPTIONS["outdoor_temperature"]
+    coordinator: Any = SimpleNamespace(
+        data=BrightSkyData(
+            current={"temperature": 17.4},
+            current_sources=[],
+            hourly_records=[],
+            forecast_sources=[],
+        )
+    )
+
+    assert description.name == "Outdoor temperature"
+    assert description.device_class is SensorDeviceClass.TEMPERATURE
+    assert description.native_unit_of_measurement is UnitOfTemperature.CELSIUS
+    assert description.state_class is SensorStateClass.MEASUREMENT
+    assert description.value_fn(coordinator) == 17.4
+    assert "outdoor_temperature" in DEFAULT_MONITORED_CONDITIONS
 
 
 def test_current_solar_irradiance_60_falls_back_to_current_hour_forecast() -> None:

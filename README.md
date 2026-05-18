@@ -26,8 +26,8 @@ integration options.
 - Hourly forecasts from Bright Sky `/weather` records.
 - Daily forecasts derived from hourly records for Home Assistant weather cards.
 - Current extra sensors for precipitation windows, solar irradiation, derived
-  solar irradiance, sunshine duration, wind details, and source station
-  metadata.
+  solar irradiance, outdoor temperature, sunshine duration, wind details, and
+  source station metadata.
 - Configurable forecast-index sensors for precipitation, precipitation
   probability, solar, derived hourly solar irradiance, sunshine, visibility,
   and source data.
@@ -54,6 +54,7 @@ Optional sensors expose Bright Sky values that do not fit the weather entity
 well, including:
 
 - `precipitation_10`, `precipitation_30`, `precipitation_60`
+- `outdoor_temperature`
 - `solar_10`, `solar_30`, `solar_60`
 - `solar_irradiance_10`, `solar_irradiance_30`, `solar_irradiance_60`
 - `sunshine_30`, `sunshine_60`
